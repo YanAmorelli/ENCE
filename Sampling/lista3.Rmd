@@ -1,0 +1,181 @@
+---
+title: "Lista 3"
+author: "Yan L. Amorelli e João Vitor Prisco"
+date: "2023-05-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercício 1  
+Um pomar possui 3.500 árvores - 250 destas árvores foram selecionadas por AAS para inspeção, e verificou-se que 85 delas possuíam algum tipo de infecção  
+**a)** Estime a proporção de arvores com infecção na população e seu intervalo de confianca de 95%.  
+
+
+A proporção estimada é calculado por $\hat{p}$ = $\frac{n_a}{n}$   
+Em que ${n_a}$ é a contagem no atributo da amostra, ${n}$ é o tamanho da amostra.
+
+
+```{r}
+tree_sample = 250
+inf_tree = 85
+y_hat_tree = inf_tree / tree_sample
+print(paste("Proporção estimada: ", y_hat_tree))
+```
+
+O intervalo de confiança para $\hat{Y}$ é dado pela fórmula: 
+$\hat{p}$ $\pm$ $1.96$ $\sqrt{\frac{N-n}{N-1}\frac{P(1-P)}{n}}$ em que 
+$\hat{p}$ = $\frac{n_a}{n}$
+
+Fórmula que eu acho
+```{r}
+tree_pop = 3500
+prop_total_estimada = tree_pop * y_hat_tree
+p_hat_tree = prop_total_estimada/tree_pop
+a = (tree_pop - tree_sample)/(tree_pop - 1)
+b = (p_hat_tree*(1 - p_hat_tree))/tree_sample 
+sup = y_hat_tree + 1.96*sqrt(a*b)
+inf = y_hat_tree - 1.96*sqrt(a*b)
+print(paste("O intervalo de confiança para P é: [", inf, ";", sup, "]"))
+```
+
+**b)** Qual a margem de erro nesta amostra?  
+  
+A margem de erro pode ser calculada pela seguinte fórmula: 
+  
+$1.96$ $\sqrt{\frac{N-n}{N-1}\frac{P(1-P)}{n}}$
+  
+```{r}
+a = (tree_pop - tree_sample)/tree_sample
+b = (p_hat_tree*(1 - p_hat_tree))/(tree_sample - 1)
+me_tree = 1.96*sqrt(a*b)
+print(paste("A margem de erro é: ", me_tree))
+```
+
+**c)** Usando os dados amostrais como amostra piloto, quantas árvores deveriam ser selecionadas de tal forma que, com 95% de confiança, o erro (absoluto) de estimação não fosse maior do que 4%?
+
+Para calcular o tamanho da amostra utilizaremos a seguinte formula:  
+
+$n \geq \frac{n_0}{1 + \frac{n_0}{N}}$
+
+
+Em que $n_0 = \frac{z_{\alpha/2}^2P(1-P)}{d^2}$
+
+```{r}
+absolute_error = 0.04
+n_0 = (1.96^2*p_hat_tree*(1-p_hat_tree))/(absolute_error^2)
+n = n_0 / 1 + (n_0/tree_pop)
+print(paste("O numero de arvores selecionadas para um erro absoluto de estimacao em 4% e IC de 95% é: ", ceiling(n)))
+```
+
+## Exercicio 2
+**a)** Estime o total de salários pagos pelas empresas da população, seu respectivo CV e obtenha um intervalo de confiança de 95% para o total populacional de interesse
+
+O total de salários pagos é calculado por $\hat{Y} = N\bar{y}$ em que $\bar{y} = \frac{1}{n}\sum_{i=1}^{n} y_i$   
+
+```{r}
+sal_sample = c(12, 100, 120, 48, 60)
+sal_mean = sum(sal_sample)/length(sal_sample)
+N_companies = 250
+sal_total = N_companies * sal_mean
+print(paste("O total de salários pagos é: ", sal_total))
+```
+
+E o $cv$ é calculado por: $\hat{cv}(\hat{Y}) = \frac{\sqrt{\hat{V}(\hat{Y})}}{\hat{Y}}$.  
+Para calcularmos o $cv$ precisamos da $\hat{V}(\hat{Y}) = N^2 (\frac{1}{n} - \frac{1}{N})s_y^2$ em que $s_y^2 = \frac{1}{n-1}\sum_{i \in S} (y_i - \bar{y})^2$
+
+```{r}
+var_sample_co = sum((sal_sample - sal_mean)^2)/(length(sal_sample)-1)
+var_hat = N_companies^2*((1/length(sal_sample)) - 1/N_companies)*var_sample_co
+cv_co = sqrt(var_hat)/sal_total
+print(paste("O cv é: ", cv_co))
+```
+
+Calculando o IC para a quantidade de salários totais:
+
+$IC = \hat{Y} \pm 1.96\sqrt{\hat{V}(\hat{Y})}$
+
+```{r}
+ep_total_sal = sqrt(var_hat)
+IC_total_sal = sal_total + c(-1.96, 1.96)*ep_total_sal
+print(IC_total_sal)
+```
+
+## Exercício 3:
+Tabela na lista
+
+Obtenha a estimativa pontual, e do respectivo cv, do número de pessoas por Km2 de área na população dos 48 estádios brasileiros.
+
+
+$\hat{R} = \frac{\bar{y}}{\bar{x}}$
+
+```{r}
+N<-48
+n<-3
+cap<-c(6,5,7)
+area<-c(7,5,9)
+
+R.chapeu<-((sum(cap)/(length(cap)))/((sum(area))/length(area)))
+
+Var.Est.R.Chap<-((1/n) - (1/N))*(1/(mean(area))^2)*(sum((cap - R.chapeu*area)^2))/(n-1) 
+Erro.Padrao<- sqrt(Var.Est.R.Chap)
+
+cv.R.Chap<- Erro.Padrao/ R.chapeu
+
+paste('A estimativa pontual é igual a',round(R.chapeu,3),' e a estimativa do CV é',round(cv.R.Chap,3))
+```
+
+
+# Exercício 4:
+Considere a população de pequenas fazendas com suas áreas plantadas (em Hectares) e receita auferida (em R$ 1.000). 
+
+Tabela na lista
+
+A partir da amostra s = (1, 2, 3) , obtida por AAS, obtenha estimativas pontuais, de variância, erro padrão e cv da receita média por Hectare.
+
+```{r}
+N <- 4
+n <- 3
+
+area <- c(18,19,20)
+rec <- c(27,34,39)
+
+Receita.Media <- mean(rec)
+Area.Media <- mean(area)
+
+R.chapeu <- Receita.Media/Area.Media
+
+Var.Est.R.chap <- ((1 - (n/N))*(1/(Area.Media)^2)*((var(rec))/n))
+Erro.Padrao.R.Chapeu <- Var.Est.R.Chap^0.5
+CV_R.Chapeu <- Erro.Padrao.R.Chapeu/R.chapeu
+
+paste('A Estimativa pontual de Variância é igual a',round(Var.Est.R.chap,3))
+paste('A Estimativa do erro padrão é igual a',round(Erro.Padrao.R.Chapeu,3))
+paste('A Estimativa do CV é igual a',round(CV_R.Chapeu,3))
+```
+
+## Exercício 5:
+Uma profissional de serviços sociais está preocupada com as condições de vida daqueles que residem no centro da cidade. Ela seleciona uma amostra aleatória simples de 25 domicílios de um total de 275. Seja xi o número de pessoas no domicílio i e yi o número de quartos no domicílio i. Os seguintes dados foram levantados:
+
+$\sum_{i\in S} x_i = 230 \sum_{i\in S} y_i = 65 \sum_{i\in S} x_i^2 = 2240 \sum_{i\in S} y_i^2 = 169 \sum_{i\in S} y_i x_i = 522$  
+
+Estime a proporção de quartos por pessoa com respectivo coeficiente de variação estimado
+
+Para calcular a proporção utilizaremos a seguinte fórmula: 
+
+$\hat{R} = \frac{\sum_{i\in S} y_i}{\sum_{i \in S} x_i} = \frac{\hat{Y}}{\hat{X}} = \frac{\bar{y}}{\bar{x}}$
+
+Como já temos os valores do somatório, temos $\hat{R}$: 
+```{r}
+print(paste("O número de quartos por pessoa é: ", 65/230))
+```
+
+Calculando o $cv$:
+
+```{r}
+var_ratio = (1/25-1/275)*(1/274)*(169-2*(65/230)*522+2240*(65/230)^2)
+cv_ratio = sqrt(var_ratio)/(65/230)
+print(paste("O cv da razão de quartos por pessoa é: ", cv_ratio))
+```
